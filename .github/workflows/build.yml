@@ -12,7 +12,10 @@ permissions:
 
 env:
   IMAGE: ghcr.io/dogofbitcoin/bitcoin
-  TAG: 31.1-dogmode-7503240
+  # One tag per packaging revision, never reused: a rebuild compiles new binaries whose hashes need not match
+  # the last ones, so moving a published tag would change what people verified. r1 was 31.1-dogmode-7503240;
+  # r2 (2026-09-14) is the same commit, shipping its licenses.
+  TAG: 31.1-dogmode-7503240-r2
   DOGMODE_COMMIT: 75032400914250c7ad857dc29043761680a66485
 
 jobs:
