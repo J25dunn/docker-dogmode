@@ -12,9 +12,11 @@ permissions:
 
 env:
   IMAGE: ghcr.io/dogofbitcoin/bitcoin
-  # One tag per packaging revision, never reused: a rebuild compiles new binaries whose hashes need not match
-  # the last ones, so moving a published tag would change what people verified. r1 was 31.1-dogmode-7503240;
-  # r2 (2026-09-14) is the same commit, shipping its licenses.
+  # One tag per packaging revision. Builds of this commit reproduce the same program sums (three builds compared,
+  # 2026-09-14), but the image digest changes with build times, so republishing a tag hands anyone who pinned it a
+  # different image: 31.1-dogmode-7503240 was published twice on 2026-09-05 that way. r2 is the same programs with
+  # their license files. This workflow still publishes on every push to main; until it publishes from git tags only,
+  # a change that must not republish is pushed with [skip ci] in its commit message.
   TAG: 31.1-dogmode-7503240-r2
   DOGMODE_COMMIT: 75032400914250c7ad857dc29043761680a66485
 

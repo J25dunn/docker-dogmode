@@ -46,22 +46,17 @@ RUN make -C depends -j"$(nproc)" NO_QT=1 NO_QR=1 NO_USDT=1 \
     && ./bitcoind --version | head -1
 
 # The licenses travel with the binaries. Bitcoin Core's COPYING (MIT, "The Bitcoin Core developers") covers the
-# client. The static binaries also carry the depends packages built above (boost, libevent, SQLite, ZeroMQ, Cap'n
-# Proto), so their own license files are taken out of the exact source archives depends downloaded and checked by
-# hash, and SOURCES lists those archives with their SHA-256, so anyone can fetch the identical sources (ZeroMQ's
-# MPL-2.0 asks for that). BUILD names the repository and commit. All of it lands in /usr/share/doc/dogmode.
-RUN mkdir -p /doc/licenses \
-    && cp COPYING /doc/COPYING \
-    && ( cd depends/sources && sha256sum * > /doc/SOURCES ) \
-    && for a in depends/sources/*.tar.*; do \
-         n="$(basename "$a")"; n="${n%%.tar.*}"; mkdir -p "/doc/licenses/$n"; \
-         tar -xf "$a" -C "/doc/licenses/$n" --wildcards --no-anchored \
-           'LICENSE*' 'LICENCE*' 'COPYING*' 'NOTICE*' 2>/dev/null || true; \
-       done \
-    && find /doc/licenses -type d -empty -delete \
-    && printf 'DOG Mode bitcoind built from %s at commit %s\nPackaged by the Dog of Bitcoin Foundation (contact@dogofbitcoin.org). Not an official DOG Mode release.\n' "$DOGMODE_REPO" "$DOGMODE_COMMIT" > /doc/BUILD \
-    && test -s /doc/COPYING && test -s /doc/SOURCES \
-    && find /doc -type f | sort
+# client. The static binaries also carry the libraries bundled in its source tree (leveldb and crc32c under
+# BSD-3-Clause; secp256k1, minisketch, ctaes and libmultiprocess under MIT; each with its own notice) and the depends
+# packages built above (boost, libevent, SQLite, ZeroMQ, Cap'n Proto). licenses.py copies the bundled libraries'
+# license files from src/, reads each depends package's out of the exact archive the build checked by hash, and writes
+# SOURCES listing those archives with their SHA-256, so anyone can fetch the identical sources (ZeroMQ's MPL-2.0 asks
+# for that). BUILD names the repository and commit. All of it lands in /usr/share/doc/dogmode.
+# A script rather than a shell loop: the loop's first run (2026-09-14) hashed depends' download-stamps directory and
+# failed. The script is tested outside Docker against this commit's real sources and fails the build if COPYING, the
+# archives or the bundled libraries' license files are missing.
+COPY licenses.py /usr/local/bin/collect-licenses
+RUN python3 /usr/local/bin/collect-licenses depends/sources COPYING /doc "$DOGMODE_REPO" "$DOGMODE_COMMIT"
 
 FROM debian:bookworm-slim
 ARG DOGMODE_COMMIT
