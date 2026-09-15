@@ -9,12 +9,13 @@ download and no signature to verify. This image compiles the client itself and s
 `Dockerfile` names the repository and the exact commit (checked after checkout), builds the
 dependencies with the repository's own `depends` system (static, the way release binaries are
 made), and prints the binaries' SHA256 sums, which also ship inside the image at `/SHA256SUMS`.
-Anyone can rebuild and compare. When the project publishes a signed release, this image switches to
-download-and-verify like `getumbrel/docker-bitcoind`.
+The included sums check binary integrity within the image; they do not establish
+independent authenticity or reproducible builds. When the project publishes a signed
+release, this image switches to download-and-verify like `getumbrel/docker-bitcoind`.
 
-```
-docker run --name dogmode -v $HOME/.bitcoin:/data/.bitcoin -p 8333:8333 ghcr.io/dogofbitcoin/bitcoin:31.1-dogmode-7503240-r2
-```
+For a first contributor run, follow the [local Docker testing guide](doc/local-docker-testing.md).
+It covers digest pinning, an isolated regtest datadir, CLI access, shutdown,
+persistence, cleanup, and where wallet or Qt changes belong.
 
 Tags are never reused. `31.1-dogmode-7503240-r2` is the same commit as `31.1-dogmode-7503240`, rebuilt to ship
 its licenses; a rebuild compiles new binaries, so each tag's run log and `/SHA256SUMS` carry its own hashes.
